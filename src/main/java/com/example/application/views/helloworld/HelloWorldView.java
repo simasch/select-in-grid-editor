@@ -1,10 +1,10 @@
 package com.example.application.views.helloworld;
 
 import com.example.application.views.MainLayout;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -14,20 +14,32 @@ import com.vaadin.flow.router.RouteAlias;
 @RouteAlias(value = "", layout = MainLayout.class)
 public class HelloWorldView extends HorizontalLayout {
 
-    private TextField name;
-    private Button sayHello;
-
     public HelloWorldView() {
-        name = new TextField("Your name");
-        sayHello = new Button("Say hello");
-        sayHello.addClickListener(e -> {
-            Notification.show("Hello " + name.getValue());
-        });
+        Binder<Bean> binder = new Binder<>(Bean.class);
+        Select<String> select = new Select<>();
+        select.setItems("foo", "bar");
 
-        setMargin(true);
-        setVerticalComponentAlignment(Alignment.END, name, sayHello);
+        Grid<Bean> grid = new Grid<>();
+        grid.addColumn(Bean::getValue).setEditorComponent(select);
 
-        add(name, sayHello);
+        grid.addItemClickListener(ev -> grid.getEditor().editItem(ev.getItem()));
+        binder.forField(select).bind(Bean::getValue, Bean::setValue);
+        grid.getEditor().setBinder(binder);
+        grid.setItems(new Bean());
+
+        add(grid);
     }
 
+    public static class Bean {
+
+        private String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
 }
